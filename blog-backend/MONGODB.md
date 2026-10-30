@@ -159,4 +159,16 @@ Da terminale:
 mongosh "mongodb://127.0.0.1:27017/blog" --eval "db.dropDatabase()"
 ```
 
+## Avvio Applicazione
+
+```powershell
+npm run dev
+
+# > blog-backend@1.0.0 dev
+# > node --watch server.js
+# 
+# Connected to MongoDB
+# Blog backend listening on port 3000
+```
+
 ---

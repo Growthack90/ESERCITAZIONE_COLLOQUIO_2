@@ -114,6 +114,50 @@ curl -X POST http://localhost:3000/api/posts `
   -d '{"title":"Primo post","body":"Contenuto","hashtags":["js","node"]}'
 ```
 
+## Test dell'applicazione
+
+### Preparare il database
+
+Il backend legge il database `blog` e la collection `posts`, come indicato in `MONGODB_URI=mongodb://127.0.0.1:27017/blog`. L'albero in Compass deve essere:
+
+```text
+localhost:27017      (connessione)
+└── blog             (database)
+    └── posts        (collection)
+```
+
+Procedura corretta in Compass:
+
+1. Clicca **+** accanto a `localhost:27017` (**Create database**).
+2. Inserisci **Database Name** `blog` e **Collection Name** `posts`, poi **Create Database**.
+3. Apri `blog`, poi `posts`.
+4. Clicca **ADD DATA**, poi **Import JSON or CSV file**.
+5. Seleziona `seed/posts.json`, formato **JSON**, e clicca **Import**.
+
+Errori comuni:
+
+- Il **nome della connessione** (etichetta in Compass) non è il database. Il database è il livello sotto la connessione.
+- Un database con un nome diverso (ad esempio `seeds`) non viene letto dal backend: `/api/posts` restituirebbe `[]`.
+- Il nome della collection deve essere `posts`, perché Mongoose ricava `posts` dal modello `Post`.
+
+### Differenza tra i due URL
+
+Avvia il server con `npm run dev` e apri questi URL nel browser (sono richieste `GET`, senza autenticazione).
+
+| URL | Cosa restituisce |
+| --- | ---------------- |
+| `http://localhost:3000/api/posts` | Tutti i post con `status: "published"`, dal più recente. Le bozze (`draft`) non compaiono. |
+| `http://localhost:3000/api/posts?hashtag=node` | Solo i post pubblicati che hanno l'hashtag `node`. |
+
+Con i dati di `seed/posts.json`:
+
+- Senza filtro: **3** post (Node.js, Express, Mongoose).
+- Con `?hashtag=node`: **2** post (Introduzione a Node.js e REST API con Express).
+
+Il parametro `hashtag` si può ripetere per cercare più hashtag: `?hashtag=node&hashtag=mongodb` restituisce i post che hanno almeno uno dei due. Se nessun post corrisponde, la risposta è `[]`.
+
+Se ottieni `[]` senza filtro, controlla che i dati siano in `blog` → `posts` e che esistano post con `status: "published"`.
+
 ## Nodemon (opzionale)
 
 `nodemon` non è necessario: lo script `dev` usa già `node --watch`, integrato in Node.js, che riavvia il server a ogni modifica.
