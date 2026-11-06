@@ -175,3 +175,80 @@ Poi modifica lo script in `package.json`:
 ```
 
 ---
+
+## START APP
+
+Controlla se è attivo MongoDB:
+```powershell
+Get-Service *mongo*
+```
+
+Se il servizio si chiama `MongoDB` ed è fermo, avvialo (potrebbe servire PowerShell come amministratore):
+```powershell
+Start-Service MongoDB
+```
+
+Configura e avvia il backend
+```powershell
+cd "../blog-backend"
+
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+notepad .env
+```
+
+Nel file `.env`, verifica che ci siano valori simili a questi; sostituisci il token di esempio con uno scelto da te:
+
+```env
+MONGODB_URI=mongodb://127.0.0.1:27017/blog
+ADMIN_TOKEN=il-tuo-token-segreto
+```
+
+Salva il file, poi avvia l’app:
+
+```powershell
+npm install
+npm run dev
+```
+
+Lascia aperta questa finestra. 
+Dovresti vedere un messaggio di connessione a MongoDB e che il backend ascolta sulla porta `3000`.
+
+Prova gli endpoint
+```powershell
+curl.exe http://localhost:3000/api/posts
+```
+
+### Creare post
+
+Lascia il server aperto e, in un’altra finestra PowerShell, esegui questa singola riga, sostituendo IL_TUO_TOKEN con il valore di ADMIN_TOKEN:
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://localhost:3000/api/posts" -Headers @{ Authorization = "Bearer IL_TUO_TOKEN" } -ContentType "application/json" -Body (@{ title = "Mio post"; body = "Contenuto del post"; hashtags = @("node") } | ConvertTo-Json -Compress)
+```
+
+Se il token non corrisponde, l’app risponde `401 Unauthorized`. 
+Se vuoi ulteriori dettagli su MongoDB e Compass, consulta `MONGODB.md`.
+
+
+### Publcare post
+
+Il post appena creato ha stato `draft` (bozza), mentre la lista mostra solo quelli con stato `published`.
+
+1. Copia il valore `_id` restituito quando hai creato il post. Puoi trovarlo anche in MongoDB Compass, nella collection `blog` → `posts`.
+
+2. Esegui questa riga in PowerShell, sostituendo `ID_DEL_POST` e `IL_TUO_TOKEN`:
+
+```powershell
+Invoke-RestMethod -Method Patch -Uri "http://localhost:3000/api/posts/ID_DEL_POST/publish" -Headers @{ Authorization = "Bearer IL_TUO_TOKEN" }
+```
+
+### Visualizza post
+
+Per visualizzare i post pubblicati:
+
+```powershell
+Invoke-RestMethod -Method Get -Uri "http://localhost:3000/api/posts"
+```
+
+Il backend restituisce i post come dati JSON; non c’è una pagina web del blog in questa applicazione.
+
+---
